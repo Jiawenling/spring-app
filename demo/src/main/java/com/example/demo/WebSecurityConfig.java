@@ -78,8 +78,6 @@ public class WebSecurityConfig  {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
                         .requestMatchers("/manager").hasRole("MANAGER")
-                        .requestMatchers("/")
-                        .permitAll()
                         .anyRequest().authenticated()
                 )
                 .headers(headers -> headers.frameOptions().disable())
@@ -87,7 +85,10 @@ public class WebSecurityConfig  {
                         .ignoringRequestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")))
                 .userDetailsService(userDetailServiceImpl)
                 .formLogin(form -> form
-                        .failureUrl("/login?error=true")
+                        .loginPage("/index.html")
+                        .loginProcessingUrl("/login")
+                        .defaultSuccessUrl("/homepage.html", true)
+                        .failureUrl("/index.html?error=true")
                         .permitAll())
                 .logout(logout -> logout
                         .logoutUrl("/logout")

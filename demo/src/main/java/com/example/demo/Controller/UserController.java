@@ -42,10 +42,6 @@ public class UserController {
         return "Only a manager can access this!";
     }
 
-    @GetMapping("/")
-    public String GetMainPage(){
-        return "Everyone can access this";
-    }
 
     @GetMapping("/profile")
     public ResponseEntity<UserProfile> GetProfilePage(Principal principal){
