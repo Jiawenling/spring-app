@@ -4,6 +4,13 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+node_modules
+build
+npm-debug.log
+.nyc
+.env
+.DS_Store
+
 ### STS ###
 .apt_generated
 .classpath
