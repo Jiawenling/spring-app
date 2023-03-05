@@ -29,6 +29,6 @@ public class UserService {
         // the rest of the registration operation
     }
     private boolean UserExists(String username) {
-        return userRepository.FindByUserName(username) != null;
+        return userRepository.findByUsername(username) != null;
     }
 }

@@ -37,11 +37,9 @@ public class UserController {
     @Autowired
     AuthenticationFacade authenticationFacade;
     
-    @Autowired
-    AuthenticationManager authenticationManager;
-
+    
     @GetMapping("/manager")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER')")
     public String GetManagerPage(){
         return "Only a manager can access this!";
     }
@@ -53,12 +51,12 @@ public class UserController {
 
     @GetMapping("/profile")
     public ResponseEntity<UserProfile> GetProfilePage(Principal principal){
-        boolean isManager  = authenticationFacade.getAuthentication().getAuthorities().stream().anyMatch(r-> r.getAuthority().equals("manager"));
-        User user= userRepository.FindByUserName(principal.getName());
+        boolean isManager  = authenticationFacade.getAuthentication().getAuthorities().stream().anyMatch(r-> r.getAuthority().equals("MANAGER"));
+        User user= userRepository.findByUsername(principal.getName()).get();
         String managerLink;
         if (isManager) managerLink = "/manager";
         else managerLink="";
-        UserProfile userProfile= new UserProfile(user.getName(), user.getUsername(), user.getRole(), managerLink);
+        UserProfile userProfile= new UserProfile(user.getName(), user.getUsername(), isManager? "MANAGER": "USER", managerLink);
         return new ResponseEntity<UserProfile>(userProfile, HttpStatusCode.valueOf(200));
     }
 
