@@ -23,6 +23,9 @@ import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.example.demo.Service.UserDetailServiceImpl;
 
@@ -77,7 +80,9 @@ public class WebSecurityConfig  {
 		http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
-                        .requestMatchers("/manager").hasRole("MANAGER")
+                        .requestMatchers("/api/login").permitAll()
+                        .requestMatchers("/api/manager").hasRole("MANAGER")
+                        .requestMatchers("/css/**","/js/**","/images/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .headers(headers -> headers.frameOptions().disable())
@@ -85,9 +90,8 @@ public class WebSecurityConfig  {
                         .ignoringRequestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")))
                 .userDetailsService(userDetailServiceImpl)
                 .formLogin(form -> form
-                        .loginPage("/index.html")
-                        .loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/homepage.html", true)
+                        .loginProcessingUrl("api/login")
+                        .defaultSuccessUrl("/profile", true)
                         .failureUrl("/index.html?error=true")
                         .permitAll())
                 .logout(logout -> logout
@@ -128,5 +132,15 @@ public class WebSecurityConfig  {
         return (web) -> web.debug(true)
         .ignoring()
         .requestMatchers("/css/**", "/js/**", "/img/**", "/lib/**", "/favicon.ico", "/h2-console/**");
+    }
+
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**").allowedOrigins("http://localhost:3000");
+            }
+        };
     }
 }

@@ -10,10 +10,13 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.example.demo.AuthenticationFacade;
 import com.example.demo.Model.LoginRequestModel;
@@ -21,6 +24,7 @@ import com.example.demo.Model.User;
 import com.example.demo.Model.UserProfile;
 import com.example.demo.Repo.UserRepository;
 import com.example.demo.Service.UserAlreadyExistException;
+import com.example.demo.Service.UserDetailServiceImpl;
 import com.example.demo.Service.UserService;
 
 import jakarta.validation.Valid;
@@ -35,15 +39,19 @@ public class UserController {
     UserService userService;
 
     @Autowired
+    UserDetailServiceImpl userDetailService;
+
+    @Autowired
     AuthenticationFacade authenticationFacade;
+
     
-    @GetMapping("/manager")
+    @GetMapping("/api/manager")
     public String GetManagerPage(){
         return "Only a manager can access this!";
     }
 
 
-    @GetMapping("/profile")
+    @GetMapping("/api/profile")
     public ResponseEntity<UserProfile> GetProfilePage(Principal principal){
         boolean isManager  = authenticationFacade.getAuthentication().getAuthorities().stream().anyMatch(r-> r.getAuthority().equals("MANAGER"));
         User user= userRepository.findByUsername(principal.getName()).get();
@@ -54,17 +62,16 @@ public class UserController {
         return new ResponseEntity<UserProfile>(userProfile, HttpStatusCode.valueOf(200));
     }
 
-    // @GetMapping("/signin")
-    // public ResponseEntity<Object> SignIn(@RequestBody LoginRequestModel loginRequest){
-    //     try{
-    //         Authentication authentication = authenticationManager.authenticate(
-    //                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-    //         return ResponseEntity.ok().build();
-    //     }
-    //     catch(BadCredentialsException ex){
-    //         return ResponseEntity.badRequest().build();
-    //     }
-    // }
+    @GetMapping("/api/login")
+    public ResponseEntity<Object> SignIn(@RequestBody LoginRequestModel loginRequest){
+        try{
+            userDetailService.loadUserByUsername(loginRequest.getUsername());
+            return ResponseEntity.ok().build();
+        }
+        catch(UsernameNotFoundException ex){
+            return ResponseEntity.badRequest().build();
+        }
+    }
     
 
     // @PostMapping("/signup")
