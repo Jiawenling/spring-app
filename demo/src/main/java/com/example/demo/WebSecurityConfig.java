@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -32,7 +33,7 @@ import com.example.demo.Service.UserDetailServiceImpl;
 // import com.example.demo.Service.UserDetailServiceImpl;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity(debug=false)
 public class WebSecurityConfig  {
 
     @Autowired
@@ -61,13 +62,9 @@ public class WebSecurityConfig  {
                 .headers(headers -> headers.frameOptions().disable())
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")))
-                .userDetailsService(userDetailServiceImpl)
-                .formLogin().loginPage("/login").loginProcessingUrl("/api/login")
-                .defaultSuccessUrl("/profile")
-                .failureUrl("/login?error")
-                .and()
-                .logout()
-                .logoutUrl("/logout").logoutSuccessUrl("/login?logout");
+                        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
+                        .and()            
+                        .userDetailsService(userDetailServiceImpl);
                 
         http
                 .csrf().disable();

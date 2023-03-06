@@ -2,9 +2,10 @@ import React from 'react'
 
 function Manager() {
     const [text, setText] = React.useState("")
-    React.useEffect(()=> fetch("/api/manager",
+    React.useEffect(()=> fetch("http://localhost:8080/api/manager",
         {
-            method: "GET"
+            method: "GET",
+            headers: {Accept: 'application/json', 'Content-Type': 'application/json'}
         })
         .then(v=> setText(v)), [])
       return (

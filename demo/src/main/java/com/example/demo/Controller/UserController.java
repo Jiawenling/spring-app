@@ -1,7 +1,10 @@
 package com.example.demo.Controller;
 
 import java.security.Principal;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import org.hibernate.id.enhanced.LegacyHiLoAlgorithmOptimizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +36,9 @@ import jakarta.validation.Valid;
 
 @RestController
 public class UserController {
+
+    Logger logger = Logger.getLogger(UserController.class.getName());
+
     @Autowired
     UserRepository userRepository;
 
@@ -63,6 +69,7 @@ public class UserController {
 
     @PostMapping("/api/login")
     public ResponseEntity<Object> SignIn(@RequestBody LoginRequestModel loginRequest){
+        logger.log(Level.WARNING, loginRequest.getUsername()+"pw:"+ loginRequest.getPassword());
         try{
             userDetailService.loadUserByUsername(loginRequest.getUsername());
             return ResponseEntity.ok().build();
