@@ -2,6 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 
 function Profile() {
+  console.log("IN PROFILE")
 const [profile, setProfile] = React.useState({name:"", username:"", role:"", privateLink:""})
 React.useEffect(()=> fetch("http://localhost:8080/api/profile",
     {

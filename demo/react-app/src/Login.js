@@ -32,7 +32,7 @@ function Login() {
           if(response.ok) 
           {
             AuthenticationService.registerSuccessfulLogin(currentUser)
-            navigate("/profile")
+            navigate("/board")
           }
     })
         .catch(e => alert("Username or password is incorrect."))
