@@ -11,13 +11,14 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
-
+import org.springframework.ui.Model;
 import com.example.demo.AuthenticationFacade;
 import com.example.demo.Model.LoginRequestModel;
 import com.example.demo.Model.User;
@@ -44,12 +45,10 @@ public class UserController {
     @Autowired
     AuthenticationFacade authenticationFacade;
 
-    
     @GetMapping("/api/manager")
-    public String GetManagerPage(){
-        return "Only a manager can access this!";
+    public ResponseEntity<String> GetManagerPage(){
+        return ResponseEntity.ok().body("Only a manager can view this");
     }
-
 
     @GetMapping("/api/profile")
     public ResponseEntity<UserProfile> GetProfilePage(Principal principal){
@@ -62,7 +61,7 @@ public class UserController {
         return new ResponseEntity<UserProfile>(userProfile, HttpStatusCode.valueOf(200));
     }
 
-    @GetMapping("/api/login")
+    @PostMapping("/api/login")
     public ResponseEntity<Object> SignIn(@RequestBody LoginRequestModel loginRequest){
         try{
             userDetailService.loadUserByUsername(loginRequest.getUsername());
@@ -72,15 +71,14 @@ public class UserController {
             return ResponseEntity.badRequest().build();
         }
     }
-    
 
-    // @PostMapping("/signup")
-    // public ResponseEntity<String> Signup(@Valid @RequestBody User user){
-    //     try{
-    //         userService.registerNewUserAccount(user);
-    //         return ResponseEntity.ok().body("Successfully registered!");
-    //     }catch(UserAlreadyExistException ex){
-    //         return ResponseEntity.badRequest().body("User already exists!");
-    //     }
-    // }
+    @PostMapping("/signup")
+    public ResponseEntity<String> Signup(@Valid @RequestBody User user){
+        try{
+            userService.registerNewUserAccount(user);
+            return ResponseEntity.ok().body("Successfully registered!");
+        }catch(UserAlreadyExistException ex){
+            return ResponseEntity.badRequest().body("User already exists!");
+        }
+    }
 }

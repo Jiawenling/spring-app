@@ -46,41 +46,14 @@ public class WebSecurityConfig  {
         return new BCryptPasswordEncoder();
     }
     
-    // @Autowired
-    // protected void configure(AuthenticationManagerBuilder auth) throws Exception{
-    
-    //     auth.jdbcAuthentication()
-    //   .dataSource(dataSource)
-    //   .usersByUsernameQuery("select name, password,'true' as enabled "
-    //     + "from users "
-    //     + "where username = ?")
-    //   .authoritiesByUsernameQuery("select username, authority "
-    //     + "from authorities "
-    //     + "where username = ?").passwordEncoder(new BCryptPasswordEncoder(12));
-    //     // UserDetails user = User
-    //     //     .withUsername("user")
-    //     //     .password(passwordEncoder().encode("password"))
-    //     //     .roles("USER")
-    //     //     .build();
-    //     //     UserDetails manager = User
-    //     //     .withUsername("manager")
-    //     //     .password(passwordEncoder().encode("password"))
-    //     //     .roles("MANAGER")
-    //     //     .build();
-    //     //     users.createUser(user);
-    //     //     users.createUser(manager);
-              
-    // }
-    
-
-
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http
+		http.cors().and()
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
-                        .requestMatchers("/api/login").permitAll()
+                        .requestMatchers("/").permitAll()
+                        .requestMatchers("/login", "/api/login").permitAll()
                         .requestMatchers("/api/manager").hasRole("MANAGER")
                         .requestMatchers("/css/**","/js/**","/images/**").permitAll()
                         .anyRequest().authenticated()
@@ -89,20 +62,18 @@ public class WebSecurityConfig  {
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")))
                 .userDetailsService(userDetailServiceImpl)
-                .formLogin(form -> form
-                        .loginProcessingUrl("api/login")
-                        .defaultSuccessUrl("/profile", true)
-                        .failureUrl("/index.html?error=true")
-                        .permitAll())
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout")
-                        .permitAll());
+                .formLogin().loginPage("/login").loginProcessingUrl("/api/login")
+                .defaultSuccessUrl("/profile")
+                .failureUrl("/login?error")
+                .and()
+                .logout()
+                .logoutUrl("/logout").logoutSuccessUrl("/login?logout");
                 
         http
                 .csrf().disable();
         http
                 .headers().frameOptions().disable();
+        
         return http.build();
         
         // return http.authorizeHttpRequests()
@@ -133,14 +104,5 @@ public class WebSecurityConfig  {
         .ignoring()
         .requestMatchers("/css/**", "/js/**", "/img/**", "/lib/**", "/favicon.ico", "/h2-console/**");
     }
-
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**").allowedOrigins("http://localhost:3000");
-            }
-        };
-    }
+    
 }
