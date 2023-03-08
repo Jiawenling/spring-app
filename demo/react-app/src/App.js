@@ -11,12 +11,12 @@ function App() {
     <Routes>
         <Route exact path="/" element={<Login />}/>
         <Route path="/login" element={<Login />}/>
-        <Route path="/board" element={<Board />}/>
-
-        <Route  element={<AuthenticatedRoute />}>
+        <Route path='/manager' element={<Manager />}/>
+        <Route path='/profile' element={<Profile />}/>
+        {/* <Route  element={<AuthenticatedRoute />}>
           <Route path='/manager' element={<Manager />}/>
           <Route path='/profile' element={<Profile />}/>
-        </Route>
+        </Route> */}
     </Routes>
   );
 }

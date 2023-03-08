@@ -8,7 +8,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -23,6 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -46,11 +49,29 @@ public class WebSecurityConfig  {
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-    
 
+    @Bean
+    public AuthTokenFilter authenticationJwtTokenFilter() {
+      return new AuthTokenFilter();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+      return authConfig.getAuthenticationManager();
+    }
+
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+         
+        authProvider.setUserDetailsService(userDetailServiceImpl);
+        authProvider.setPasswordEncoder(passwordEncoder());
+     
+        return authProvider;
+    }
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http.cors().and()
+		http.cors().and().csrf().disable()
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
                         .requestMatchers("/").permitAll()
@@ -59,40 +80,19 @@ public class WebSecurityConfig  {
                         .requestMatchers("/css/**","/js/**","/images/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .headers(headers -> headers.frameOptions().disable())
-                .csrf(csrf -> csrf
-                        .ignoringRequestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")))
-                        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
-                        .and()            
+                .formLogin().loginPage("/login").permitAll().loginProcessingUrl("/api/login")
+                .and()
+                .headers(headers -> headers.frameOptions().disable())           
                         .userDetailsService(userDetailServiceImpl);
                 
         http
-                .csrf().disable();
-        http
                 .headers().frameOptions().disable();
+        http.authenticationProvider(authenticationProvider());
+
+        http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+    
         
         return http.build();
-        
-        // return http.authorizeHttpRequests()
-        // .requestMatchers("/h2/**").permitAll()
-        // .requestMatchers("/manager").hasRole("MANAGER")
-        // .requestMatchers("/", "/login", "/logout", "/error").permitAll()
-        // .and()
-        // .csrf().ignoringRequestMatchers("/h2/**")
-        // .and()
-        // .headers().frameOptions().disable()
-        // .and()
-        // .anyRequest().authenticated()
-        // .formLogin()
-        // .defaultSuccessUrl("/profile")
-        // .and()
-        // .build();
-
-            // (form) -> form
-			// 	.loginPage("/login")
-			// 	.permitAll()
-			// .logout((logout) -> logout.permitAll());
-
 	}
 
     @Bean

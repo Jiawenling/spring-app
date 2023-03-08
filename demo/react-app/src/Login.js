@@ -26,14 +26,11 @@ function Login() {
             method: "POST",
             headers: {Accept: 'application/json', 'Content-Type': 'application/json'},
             body: JSON.stringify(state),
-        })
+        }
+        )
         .then((response)=> {
-          console.log(response.status)
-          if(response.ok) 
-          {
-            AuthenticationService.registerSuccessfulLogin(currentUser)
-            navigate("/board")
-          }
+          console.log("FETCHED!")
+          AuthenticationService.registerSuccessfulLogin(currentUser)
     })
         .catch(e => alert("Username or password is incorrect."))
         

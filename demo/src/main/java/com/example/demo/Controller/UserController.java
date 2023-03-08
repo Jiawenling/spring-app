@@ -1,8 +1,10 @@
 package com.example.demo.Controller;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import org.hibernate.id.enhanced.LegacyHiLoAlgorithmOptimizer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -22,9 +26,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.ui.Model;
-import com.example.demo.AuthenticationFacade;
+import com.example.demo.JwtUtils;
+import com.example.demo.Model.JwtResponse;
 import com.example.demo.Model.LoginRequestModel;
 import com.example.demo.Model.User;
+import com.example.demo.Model.UserDetailImpl;
 import com.example.demo.Model.UserProfile;
 import com.example.demo.Repo.UserRepository;
 import com.example.demo.Service.UserAlreadyExistException;
@@ -43,49 +49,47 @@ public class UserController {
     UserRepository userRepository;
 
     @Autowired
-    UserService userService;
-
-    @Autowired
     UserDetailServiceImpl userDetailService;
 
     @Autowired
-    AuthenticationFacade authenticationFacade;
+	AuthenticationManager authenticationManager;
+
+    @Autowired
+    JwtUtils jwtUtils;
 
     @GetMapping("/api/manager")
     public ResponseEntity<String> GetManagerPage(){
         return ResponseEntity.ok().body("Only a manager can view this");
     }
 
-    @GetMapping("/api/profile")
-    public ResponseEntity<UserProfile> GetProfilePage(Principal principal){
-        boolean isManager  = authenticationFacade.getAuthentication().getAuthorities().stream().anyMatch(r-> r.getAuthority().equals("MANAGER"));
-        User user= userRepository.findByUsername(principal.getName()).get();
-        String managerLink;
-        if (isManager) managerLink = "/manager";
-        else managerLink="";
-        UserProfile userProfile= new UserProfile(user.getName(), user.getUsername(), isManager? "MANAGER": "USER", managerLink);
-        return new ResponseEntity<UserProfile>(userProfile, HttpStatusCode.valueOf(200));
-    }
+    // @GetMapping("/api/profile")
+    // public ResponseEntity<UserProfile> GetProfilePage(Principal principal){
+    //     boolean isManager  = authenticationFacade.getAuthentication().getAuthorities().stream().anyMatch(r-> r.getAuthority().equals("MANAGER"));
+    //     User user= userRepository.findByUsername(principal.getName()).get();
+    //     String managerLink;
+    //     if (isManager) managerLink = "/manager";
+    //     else managerLink="";
+    //     UserProfile userProfile= new UserProfile(user.getName(), user.getUsername(), isManager? "MANAGER": "USER", managerLink);
+    //     return new ResponseEntity<UserProfile>(userProfile, HttpStatusCode.valueOf(200));
+    // }
 
     @PostMapping("/api/login")
-    public ResponseEntity<Object> SignIn(@RequestBody LoginRequestModel loginRequest){
-        logger.log(Level.WARNING, loginRequest.getUsername()+"pw:"+ loginRequest.getPassword());
-        try{
-            userDetailService.loadUserByUsername(loginRequest.getUsername());
-            return ResponseEntity.ok().build();
-        }
-        catch(UsernameNotFoundException ex){
-            return ResponseEntity.badRequest().build();
-        }
-    }
+	public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequestModel loginRequest) {
 
-    @PostMapping("/signup")
-    public ResponseEntity<String> Signup(@Valid @RequestBody User user){
-        try{
-            userService.registerNewUserAccount(user);
-            return ResponseEntity.ok().body("Successfully registered!");
-        }catch(UserAlreadyExistException ex){
-            return ResponseEntity.badRequest().body("User already exists!");
-        }
-    }
+		Authentication authentication = authenticationManager.authenticate(
+				new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		String jwt = jwtUtils.generateJwtToken(authentication);
+		
+		UserDetailImpl userDetails = (UserDetailImpl) authentication.getPrincipal();		
+		List<String> roles = userDetails.getAuthorities().stream()
+				.map(item -> item.getAuthority())
+				.collect(Collectors.toList());
+
+		return ResponseEntity.ok(new JwtResponse(jwt, 
+												 userDetails.getUsername(), 
+												 userDetails.getName(), 
+												 roles));
+	}
 }

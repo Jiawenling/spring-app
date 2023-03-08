@@ -9,9 +9,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 public class UserDetailImpl implements UserDetails{
     private final User user;
+    public String name;
 
     public UserDetailImpl(User user) {
         this.user = user;
+        this.name = user.getName();
     }
 
     @Override
@@ -52,4 +54,15 @@ public class UserDetailImpl implements UserDetails{
     public boolean isEnabled() {
         return true;
     }
+
+
+
+    public User getUser() {
+        return user;
+    }
+
+    public String getName() {
+        return name;
+    }
+
 }
