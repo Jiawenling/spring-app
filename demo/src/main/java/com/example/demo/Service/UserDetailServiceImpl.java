@@ -2,9 +2,6 @@ package com.example.demo.Service;
 
 import com.example.demo.Model.UserDetailImpl;
 import com.example.demo.Repo.UserRepository;
-
-import jakarta.websocket.server.ServerEndpoint;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

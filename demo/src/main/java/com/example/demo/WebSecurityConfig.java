@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.authentication.configuration.EnableGlobalAuthentication;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -24,6 +26,7 @@ import com.example.demo.Service.UserDetailServiceImpl;
 
 @Configuration
 @EnableWebSecurity(debug=false)
+@EnableMethodSecurity
 public class WebSecurityConfig  {
 
     @Autowired
@@ -65,10 +68,8 @@ public class WebSecurityConfig  {
             .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
             .authorizeHttpRequests(auth -> auth
-            .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
             .requestMatchers("/").permitAll()
             .requestMatchers("/login", "/api/login").permitAll()
-            .requestMatchers("/api/manager").hasRole("MANAGER")
             .requestMatchers("/css/**","/js/**","/images/**").permitAll()
             .anyRequest().authenticated()
             )
@@ -89,7 +90,7 @@ public class WebSecurityConfig  {
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.debug(true)
         .ignoring()
-        .requestMatchers("/css/**", "/js/**", "/img/**", "/lib/**", "/favicon.ico", "/h2-console/**");
+        .requestMatchers("/css/**", "/js/**", "/img/**", "/lib/**", "/favicon.ico");
     }
     
 }
