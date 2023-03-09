@@ -27,7 +27,7 @@ public class DemoApplication {
 	CommandLineRunner commandLineRunner() {
 		return args -> {
 			users.save(new User("user", "Mr Smith", encoder.encode("password"),"ROLE_USER"));
-			users.save(new User("admin","Mrs Smith", encoder.encode("password"),"ROLE_USER,ROLE_MANAGER"));
+			users.save(new User("manager","Mrs Smith", encoder.encode("password"),"ROLE_USER,ROLE_MANAGER"));
 		};
 	}
 }
