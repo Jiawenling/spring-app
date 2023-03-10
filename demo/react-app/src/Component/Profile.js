@@ -9,6 +9,7 @@ function Profile() {
       <div>
          <h1>Hi {currentUser.name}</h1>
         <div> 
+        <p>Username: {currentUser.username}</p>
         <p>Role: </p>
           {currentUser.roles.map((item, i)=><p key={i}>{item}</p>)}
         </div>
